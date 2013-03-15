@@ -1,0 +1,8 @@
+{
+  "name": "tmpl.js",
+  "version": "0.0.1",
+  "main": "./tmpl.js",
+  "dependencies": {
+    "jquery": "~1.7.2"
+  }
+}
