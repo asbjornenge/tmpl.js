@@ -16,7 +16,7 @@ A tiny trivial javascript template ... library?
 ### Rendering templates
 
 	tmpl.load()
-	tmpl('login',{'user':'Bob'})	
+	var login = tmpl('login',{'user':'Bob'})
 	==>
 	<div id="login" class="login">
         <span>Welcome Bob!</span>
