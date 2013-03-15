@@ -1,6 +1,6 @@
 # tmpl.js
 
-A tiny trivial feature lacking jquery dependant javascript template ... library?
+A tiny trivial javascript template ... library?
 
 ## Usage
 
@@ -16,13 +16,14 @@ A tiny trivial feature lacking jquery dependant javascript template ... library?
 ### Rendering templates
 
 	tmpl.load()
-	tmpl('login',{'username':'Bob'})
-	
+	tmpl('login',{'username':'Bob'})	
 	==>
-	
 	<div id="login" class="login">
         <span>Welcome Bob!</span>
     </div>
 
 ## Installation
 
+	bower install tmpl.js
+
+…or grab it [raw](https://raw.github.com/asbjornenge/tmpl.js/master/tmpl.js).
