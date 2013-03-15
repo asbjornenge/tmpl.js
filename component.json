@@ -3,6 +3,6 @@
   "version": "0.0.1",
   "main": "./tmpl.js",
   "dependencies": {
-    "jquery": "~1.7.2"
+    "jquery": ">=1.7.2"
   }
 }
