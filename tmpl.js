@@ -1,27 +1,10 @@
 /* tmpl.js
  * -------
- * Javascript template system
+ * Tiny trivial template system
  *
  * Author: @asbjornenge
  * ----------------------------- */
 
-// TODO: Make plugin friendly?
-
-// Object.byString = function(o, s) {
-//     s = s.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
-//     s = s.replace(/^\./, '');           // strip a leading dot
-//     var a = s.split('.');
-//     while (a.length) {
-//         var n = a.shift();
-//         if (n in o) {
-//         	p = o;
-//             o = o[n];
-//         } else {
-//             return;
-//         }
-//     }
-//     return o;
-// }
 
 var tmpl = function render(name, obj) {
 	console.time('tmpl.js')
@@ -29,34 +12,44 @@ var tmpl = function render(name, obj) {
 	var tmp   = $(tmpl.templates[name]).clone()
 	items = tmp[0].getElementsByTagName("*");
 	for (var i = items.length; i--;) {  
-	    // PREPARE
-	    // tmpl.prepare(items[i]);
-	    // ATTRIBUTES
 	    tmpl.handle_attributes(items[i],obj);
 	    tmpl.handle_textnodes(items[i],obj);
 	}
-	// tmpl.prepare(tmp[0]);
 	tmpl.handle_attributes(tmp[0],obj);
 	tmpl.handle_textnodes(tmp[0],obj);
 	console.timeEnd('tmpl.js')
 	return tmp;
 }
 
-/*** PROPERTIES ***/
+/* PROPERTIES
+ *------------------------------ */
 
 tmpl.reg = /{{(.*?)}}/g
 tmpl.templates = {};
+
+/* FILTERS 
+ *------------------------------ */
+
 tmpl.filters = {
-	'extract' : function(data) {
+	extract  : function(data) {
 		data.extracted = tmpl.engine.eval(data.obj,data.prop);
 	},
-	'null'    : function(data) {
+	null     : function(data) {
 		if (data.extracted == null) data.extracted = '';
 	},
-	'undef'   : function(data) {
+	undef    : function(data) {
 		if (data.extracted == undefined) data.extracted = '';
 	},
-	'replace' : function(data) {
+	databind : function(data) {
+		if (data.type != 'attribute') {
+			if (typeof(console) == 'object') console.log("Databind only supported for attributes");
+			return;
+		}
+		data.node.onchange = function() {
+			tmpl.engine.eval(data.obj,data.prop,this.value);
+		}
+	},
+	replace  : function(data) {
 		if (data.type == 'attribute') {
 			var attr = data.node.attributes[data.attribute];
 			attr.value = attr.value.replace(data.expr,data.extracted);
@@ -69,7 +62,8 @@ tmpl.filters = {
 	'default' : '@null@undef'
 }
 
-/*** HANDLERS ***/
+/* MATCHER 
+ *------------------------------ */
 
 tmpl.match = function(str) {
 	var m = str.match(tmpl.reg)
@@ -92,6 +86,9 @@ tmpl.match = function(str) {
 	}
 	return matches;
 }
+
+/* ATTRIBUTE HANDLER
+ *------------------------------ */
 
 tmpl.handle_attributes = function(node, obj) {
 	var attributes = node.attributes;
@@ -116,6 +113,9 @@ tmpl.handle_attributes = function(node, obj) {
 	}
 }
 
+/* TEXTNODE HANDLER
+ *------------------------------ */
+
 tmpl.handle_textnodes = function(node, obj) {
 	var childNodes = node.childNodes;
 	for (var j=childNodes.length; j--;) {
@@ -138,29 +138,12 @@ tmpl.handle_textnodes = function(node, obj) {
 				}
 				tmpl.filters.replace(data);
 			}
-			// var res = child.textContent.match(tmpl.reg);
-			// if (res != null && res.length > 0) {
-			// 	for (var k=0; k<res.length; k++) {
-			// 		var val = tmpl.eval_property(res[k].slice(2,-2),obj);
-			// 		// BIND
-			// 		text.push({
-			// 			expr   : res[k],
-			// 			match  : val,
-			// 			was    : child.textContent
-			// 		})
-			// 		child.textContent = child.textContent.replace(res[k],val);
-			// 	}
-			// }
 		}
-	}	
-	// BIND
-	// if (node.tmpljs.bind) {
-	// 	node.tmpljs.text = text;
-	// 	node.tmpljs.obj = obj;
-	// }
+	}
 }
 
-/*** LOAD ***/
+/* LOADER
+ *------------------------------ */
 
 tmpl.load = function() {
 	$('[template]').each(function(i,t) {
@@ -172,30 +155,16 @@ tmpl.load = function() {
 	})
 }
 
-/*** PROPERTY BIDING ***/
+/* EVAL ENGINE
+ *------------------------------ */
 
 tmpl.engine = {}
-tmpl.engine.eval = function(obj,expr) {
+tmpl.engine.eval = function(obj,expr,val) {
 	o = obj;
     s = expr.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
     s = expr.replace(/^\./, '');           // strip a leading dot
     var a = expr.split('.');
-    while (a.length) {
-        var n = a.shift();
-        if (n in o) {
-            o = o[n];
-        } else {
-            return;
-        }
-    }
-    return o;
-}
-
-tmpl.engine.update = function(obj,expr,val) {
-	o = obj;
-    s = expr.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
-    s = expr.replace(/^\./, '');           // strip a leading dot
-    var a = expr.split('.');
+    var p;
     while (a.length) {
         var n = a.shift();
         if (n in o) {
@@ -205,12 +174,8 @@ tmpl.engine.update = function(obj,expr,val) {
             return;
         }
     }
-    if (typeof(p) == "object") {
-    	p[n] = val
-    };
-	return obj;
+    if (val != undefined && typeof(p) == 'object') p[n] = val;
+    return o;
 }
-
-
 
 
