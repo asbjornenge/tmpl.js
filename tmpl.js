@@ -1,13 +1,16 @@
-/* tmpl.js
- * -------
- * Tiny trivial template system
+/**
+ * Beard
  *
- * Author: @asbjornenge
- * ----------------------------- */
-
+ * Hairy templates
+ *
+ * http://asbjornenge.com/beard
+ * @asbjornenge
+ *
+ * BSD
+ **/
 
 var tmpl = function render(name, obj) {
-	console.time('tmpl.js')
+//	console.time('tmpl.js')
 	if (!tmpl.templates.hasOwnProperty(name)) return;
 	var tmp   = $(tmpl.templates[name]).clone()
 	items = tmp[0].getElementsByTagName("*");
@@ -17,7 +20,7 @@ var tmpl = function render(name, obj) {
 	}
 	tmpl.handle_attributes(tmp[0],obj);
 	tmpl.handle_textnodes(tmp[0],obj);
-	console.timeEnd('tmpl.js')
+//	console.timeEnd('tmpl.js')
 	return tmp;
 }
 
@@ -26,6 +29,17 @@ var tmpl = function render(name, obj) {
 
 tmpl.reg = /{{(.*?)}}/g
 tmpl.templates = {};
+
+/* EVENTS
+ *------------------------------ */
+
+tmpl.events = {}
+tmpl.events.init = function() {
+	var databind = document.createEvent('HTMLEvents');
+    databind.initEvent('databind', false, false);
+    tmpl.events['databind'] = databind;
+}
+tmpl.events.init();
 
 /* FILTERS 
  *------------------------------ */
@@ -45,9 +59,10 @@ tmpl.filters = {
 			if (typeof(console) == 'object') console.log("Databind only supported for attributes");
 			return;
 		}
-		data.node.onchange = function() {
+		data.node.addEventListener('change', function() {
 			tmpl.engine.eval(data.obj,data.prop,this.value);
-		}
+			data.node.dispatchEvent(tmpl.events.databind);
+		})
 	},
 	replace  : function(data) {
 		if (data.type == 'attribute') {
